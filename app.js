@@ -371,6 +371,90 @@ function renderMessages(chatId) {
       // 普通文本气泡
       div.textContent = m.text;
     }
+  }, 400);
+}
+
+function renderMessages(chatId) {
+  const map = getMessagesMap();
+  const msgs = map[chatId] || [];
+  elMessages.innerHTML = '';
+  for (const m of msgs) {
+    const div = document.createElement('div');
+    // voice 消息沿用用户 or 助手样式，这里仍按 role 渲染
+    div.className = 'bubble ' + (m.role === 'user' ? 'user' : (m.role === 'error' ? 'error' : 'assistant'));
+
+    if (m.audioDataUrl) {
+
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = m.audioDataUrl;
+      audio.style.display = 'block';
+      audio.style.marginBottom = '6px';
+
+      const caption = document.createElement('div');
+      caption.className = 'muted';
+      caption.textContent = m.text || '(no transcript)';
+
+      div.appendChild(audio);
+      div.appendChild(caption);
+    } else {
+
+      div.textContent = m.text;
+    }
+
+    elMessages.appendChild(div);
+  }
+  elMessages.scrollTop = elMessages.scrollHeight;
+}
+
+    // function sendMessage(text) {
+    //   const trimmed = text.trim();
+    //   if (!trimmed) return;
+    //   const used = getDailyUserMessageCount(userEmail);
+    //   const max = entitlements[userType].maxMessagesPerDay;
+    //   if (used >= max) {
+    //     addMessage(currentChatId || ensureChat(), 'error', 'Rate limit reached for your user type.');
+    //     return;
+    //   }
+    //   const cid = currentChatId || ensureChat();
+    //   addMessage(cid, 'user', trimmed);
+    //   elInput.value = '';
+    //   // Mock assistant: sometimes fail, otherwise echo with slight transform
+    //   setTimeout(() => {
+    //     if (Math.random() < 0.2) {
+    //       addMessage(cid, 'error', 'Demo: No backend/LLM configured. This is a simulated failure.');
+    //     } else {
+    //       const reply = `Demo reply (mock): ${trimmed.toUpperCase()}`;
+    //       addMessage(cid, 'assistant', reply);
+    //       // Optional: speak the reply
+    //       if (window.speechSynthesis) {
+    //         const utter = new SpeechSynthesisUtterance(reply);
+    //         utter.lang = 'en-US';
+    //         if (englishVoice) utter.voice = englishVoice;
+    //         window.speechSynthesis.speak(utter);
+    //
+    //       }
+    //
+    //
+    //
+    //     }
+    //   }, 400);
+    // }
+
+function sendMessage(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  const used = getDailyUserMessageCount(userEmail);
+  const max = entitlements[userType].maxMessagesPerDay;
+  if (used >= max) {
+    addMessage(currentChatId || ensureChat(), 'error', 'Rate limit reached for your user type.');
+    return;
+  }
+  const cid = currentChatId || ensureChat();
+  addMessage(cid, 'user', trimmed);
+  elInput.value = '';
+  assistantRespond(cid, trimmed);
+}
 
     elMessages.appendChild(div);
   }
