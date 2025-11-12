@@ -1,35 +1,154 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Front Test – Login</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="auth-card">
-      <h1 class="title">Sign In</h1>
-      <p class="desc">Use your email and password to sign in.</p>
-      <form id="login-form">
-        <div class="field">
-          <label>Email</label>
-          <input class="email" type="email" name="email" required placeholder="user@example.com" />
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input class="password" type="password" name="password" required />
-        </div>
-        <div class="row">
-          <button class="btn primary" type="submit">Sign in</button>
-          <a class="btn" href="index.html">Continue as guest</a>
-        </div>
-      </form>
-      <div id="login-info" class="note"></div>
-      <p class="note">No backend involved; credentials are stored locally for demo.</p>
-      <p class="note">New here? <a class="link" href="register.html">Create an account</a>.</p>
-      <p class="note">Forgot your password? <a class="link" href="forgot.html">Reset it here</a>.</p>
-    </div>
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #0f172a;        /* 整体背景 */
+      --panel: #111827;     /* 卡片背景 */
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1f2937 0%, #0f172a 45%, #020617 100%);
+    }
+    .card {
+      background: var(--panel);
+      width: 360px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      padding: 26px 26px 20px;
+      border: 1px solid rgba(148, 163, 184, 0.04);
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .field {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      background: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      outline: none;
+      font-size: 14px;
+      color: var(--text);
+    }
+    input::placeholder {
+      color: rgba(148, 163, 184, .6);
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
+      background: #0f172a;
+    }
+    .btn {
+      width: 100%;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: transform .05s ease-out;
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    .link-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .link {
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .link:hover {
+      color: var(--text);
+    }
+    .error {
+      color: #f43f5e;
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
 
-    <script src="app.js"></script>
-  </body>
-  </html>
+<div class="card">
+  <h1>Welcome back</h1>
+  <p class="sub">Sign in to your account</p>
+
+  <form id="login-form">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <button type="submit" class="btn">Login</button>
+    <div id="login-error" class="error"></div>
+  </form>
+
+  <div class="link-row">
+    <a href="register.html" class="link">Create account</a>
+    <a href="forgot.html" class="link">Forgot password?</a>
+  </div>
+</div>
+
+<!-- 你的 firebase-auth.js -->
+<script src="firebase-auth.js"></script>
+<script>
+  const form = document.getElementById('login-form');
+  const errBox = document.getElementById('login-error');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errBox.textContent = '';
+    const email = form.email.value.trim();
+    const password = form.password.value;
+
+    try {
+      await fbSignIn(email, password);
+      // 登录成功去 dashboard 或 chat，看你入口怎么写的
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      errBox.textContent = err.message || 'Login failed';
+    }
+  });
+</script>
+</body>
+</html>

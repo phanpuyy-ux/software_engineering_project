@@ -23,6 +23,23 @@
       <div id="forgot-info" class="note"></div>
     </div>
     <script src="app.js"></script>
+
+    <script src="firebase-auth.js"></script>
+    <script>
+      const form = document.getElementById('forgot-form');
+      const info = document.getElementById('forgot-info');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = form.email.value.trim();
+        try {
+          await fbSendReset(email);
+          info.textContent = 'Password reset email sent. Check your inbox.';
+        } catch (err) {
+          info.textContent = err.message;
+        }
+      });
+    </script>
+
   </body>
   </html>
 

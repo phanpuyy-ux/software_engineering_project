@@ -1,0 +1,285 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #e5e7eb;
+    }
+    .layout {
+      display: flex;
+      height: 100vh;
+    }
+    /* 左侧栏 */
+    .sidebar {
+      width: 210px;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-top {
+      padding: 14px;
+    }
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 14px;
+      background: #ffffff;
+      color: #000;
+    }
+    .btn {
+      background: #e2e8f0;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-danger {
+      background: #f43f5e;
+      color: #fff;
+    }
+    /* 顶部栏 */
+    .topbar {
+      height: 50px;
+      background: #ffffff;
+      border-bottom: 1px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .verify-ok { color: #22c55e; font-size: 12px; }
+    .verify-no { color: #f97316; font-size: 12px; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <!-- 左侧栏 -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div style="font-weight:700; margin-bottom:10px;">AI Assistant</div>
+      <button id="new-chat" class="btn" style="width:100%;">+ New chat</button>
+    </div>
+    <!-- 这里以后可以放聊天列表 -->
+    <div id="chat-list" style="padding:0 14px; flex:1; overflow:auto;"></div>
+
+    <div class="sidebar-bottom">
+      <div>Account</div>
+      <div id="acc-email" style="word-break:break-all;"></div>
+      <div id="acc-verified"></div>
+      <button id="btn-verify" class="btn" style="width:100%; margin-top:6px; background:#9ca3af; color:white;">Verify email</button>
+      <button id="btn-logout" class="btn btn-danger" style="width:100%; margin-top:6px;">Logout</button>
+    </div>
+  </aside>
+
+  <!-- 右侧主区域 -->
+  <div class="main">
+    <!-- 顶部 -->
+    <header class="topbar">
+      <div style="font-weight:600;">Chat with AI</div>
+      <div id="badge">...</div>
+    </header>
+
+    <!-- 中间聊天区域 -->
+    <div style="flex:1; display:flex; flex-direction:column; background:#dcdfe4;">
+      <!-- 上面消息区 -->
+      <div id="chat-messages" style="
+          flex:1;
+          overflow-y:auto;
+          padding:20px;
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+        ">
+        <!-- JS 里会塞假消息 -->
+      </div>
+
+      <!-- 下面输入区 -->
+      <div id="chat-input-bar" style="
+          display:flex;
+          gap:10px;
+          padding:12px 16px;
+          background:#fff;
+          border-top:1px solid #d1d5db;
+        ">
+        <input id="chat-input" type="text" placeholder="Message ChatGPT…" style="
+            flex:1;
+            padding:8px 12px;
+            border:1px solid #d1d5db;
+            border-radius:999px;
+            outline:none;
+          " />
+        <button id="chat-mic" class="btn" style="width:40px; border-radius:999px; background:#e5e7eb;">🎤</button>
+        <button id="chat-send" class="btn btn-primary" style="border-radius:999px;">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 你已经有的 firebase-auth.js，一定要在我们自己的脚本前面引 -->
+<script src="firebase-auth.js"></script>
+<script>
+  /* ---------- 聊天气泡渲染 ---------- */
+  function addChatBubble(role, text) {
+    const box = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.style.maxWidth = '70%';
+    div.style.padding = '10px 14px';
+    div.style.borderRadius = '14px';
+    div.style.whiteSpace = 'pre-wrap';
+
+    if (role === 'user') {
+      div.style.alignSelf = 'flex-end';
+      div.style.background = '#2563eb';
+      div.style.color = '#fff';
+    } else {
+      div.style.alignSelf = 'flex-start';
+      div.style.background = '#fff';
+      div.style.color = '#0f172a';
+    }
+
+    div.textContent = text;
+    box.appendChild(div);
+    // 滚到底
+    box.scrollTop = box.scrollHeight;
+  }
+
+  /* ---------- 假数据 ---------- */
+  function seedFakeChat(userEmail) {
+    addChatBubble('assistant', 'Hi ' + (userEmail || 'there') + ', I am your AI assistant on WEB.');
+    addChatBubble('user', 'Can you summarise my tasks today?');
+    addChatBubble('assistant', 'Sure:\\n1) Finish web dashboard\\n2) Hook Firebase auth\\n3) Test voice input');
+  }
+
+  /* ---------- 语音输入 ---------- */
+  function initVoiceInput() {
+    const micBtn = document.getElementById('chat-mic');
+    const input = document.getElementById('chat-input');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      micBtn.disabled = true;
+      micBtn.title = 'Browser not supported';
+      return;
+    }
+    const recog = new SpeechRecognition();
+    recog.lang = 'en-US';
+    recog.continuous = false;
+    recog.interimResults = false;
+
+    let listening = false;
+    recog.onresult = (e) => {
+      const transcript = Array.from(e.results).map(r => r[0].transcript).join(' ');
+      input.value = (input.value + ' ' + transcript).trim();
+    };
+    recog.onend = () => {
+      listening = false;
+      micBtn.textContent = '🎤';
+    };
+
+    micBtn.addEventListener('click', () => {
+      if (listening) {
+        recog.stop();
+        return;
+      }
+      listening = true;
+      micBtn.textContent = '⏺';
+      try { recog.start(); } catch (e) {}
+    });
+  }
+
+  /* ---------- 发送按钮 ---------- */
+  function initSend() {
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('chat-send');
+
+    function doSend() {
+      const text = input.value.trim();
+      if (!text) return;
+      addChatBubble('user', text);
+      input.value = '';
+      // 假回复
+      setTimeout(() => {
+        addChatBubble('assistant', 'Demo reply: ' + text.toUpperCase());
+      }, 400);
+    }
+
+    sendBtn.addEventListener('click', doSend);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doSend();
+      }
+    });
+  }
+
+  /* ---------- 页面主逻辑 ---------- */
+  (async function () {
+    // 1. 先看有没有登录，没有就回 login
+    const user = fbGetCurrentUser();
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // 2. 用 token 去 Firebase 查是不是 verified
+    let info;
+    try {
+      info = await fbLookup(user.idToken);
+    } catch (e) {
+      fbSignOut();
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // 3. 填左下角账号信息
+    document.getElementById('acc-email').textContent = user.email;
+    const verEl = document.getElementById('acc-verified');
+    const btnVerify = document.getElementById('btn-verify');
+
+    if (info.emailVerified) {
+      verEl.textContent = 'Verified';
+      verEl.className = 'verify-ok';
+      btnVerify.disabled = true;
+    } else {
+      verEl.textContent = 'Not verified';
+      verEl.className = 'verify-no';
+      btnVerify.disabled = false;
+    }
+
+    // 点验证邮件
+    btnVerify.addEventListener('click', async () => {
+      try {
+        await fbSendVerify(user.idToken);
+        alert('Verification email sent.');
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // 退出
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      fbSignOut();
+      window.location.href = 'login.html';
+    });
+
+    // 4. 初始化聊天界面
+    seedFakeChat(user.email);
+    initVoiceInput();
+    initSend();
+  })();
+</script>
+</body>
+</html>

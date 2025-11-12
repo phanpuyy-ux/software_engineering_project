@@ -29,5 +29,25 @@
     </div>
 
     <script src="app.js"></script>
+
+    <script src="firebase-auth.js"></script>
+    <script>
+      const form = document.getElementById('register-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = form.email.value.trim();
+        const password = form.password.value;
+        try {
+          await fbSignUp(email, password);
+          // 注册完你JavaFX是直接进 dashboard 的，我们也这么做
+          window.location.href = 'dashboard.html';
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    </script>
+
   </body>
   </html>
+
+

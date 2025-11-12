@@ -1,56 +1,130 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Front Test – Chat</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="container">
-      <aside class="sidebar">
-        <div class="row">
-          <div class="brand">Front Test</div>
-          <span class="pill">Static Demo</span>
-          <span class="space"></span>
-        </div>
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(to bottom, #e2e8f0, #ffffff);
+    }
+    .card {
+      background: #fff;
+      width: 360px;
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(15,23,42,.12);
+      padding: 26px 26px 20px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .sub {
+      margin: 0 0 18px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .field {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      outline: none;
+      font-size: 14px;
+    }
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+    .btn {
+      width: 100%;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .link-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .link {
+      color: #2563eb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .error {
+      color: crimson;
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
 
-        <div class="row">
-          <button id="new-chat" class="btn primary">New Chat</button>
-          <a class="btn" href="login.html">Login</a>
-          <a class="btn" href="register.html">Register</a>
-        </div>
+<div class="card">
+  <h1>Welcome back</h1>
+  <p class="sub">Sign in to your account</p>
 
-        <div class="row">
-          <div id="user-label" class="muted"></div>
-          <span class="space"></span>
-          <button id="logout" class="btn danger">Sign out</button>
-        </div>
-
-        <div class="muted">History</div>
-        <div id="history" class="history"></div>
-
-        <div class="note">All data stored in your browser.</div>
-      </aside>
-
-      <main class="main">
-        <div class="chat-header">
-          <div class="brand">Chat</div>
-          <span class="space"></span>
-          <div id="limit-label" class="usage"></div>
-        </div>
-
-        <div id="messages" class="messages"></div>
-
-        <div class="composer">
-          <textarea id="composer-input" class="input" rows="2" placeholder="Type your message... (Enter to send)"></textarea>
-          <button id="mic" class="btn mic" title="Voice input">🎤</button>
-          <button id="send" class="btn primary">Send</button>
-        </div>
-      </main>
+  <form id="login-form">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email">
     </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn">Login</button>
+    <div id="login-error" class="error"></div>
+  </form>
 
-    <script src="app.js"></script>
-  </body>
-  </html>
+  <div class="link-row">
+    <a href="register.html" class="link">Create account</a>
+    <a href="forgot.html" class="link">Forgot password?</a>
+  </div>
+</div>
 
+<!-- 引你已经有的 firebase-auth.js -->
+<script src="firebase-auth.js"></script>
+<script>
+  const form = document.getElementById('login-form');
+  const errBox = document.getElementById('login-error');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errBox.textContent = '';
+    const email = form.email.value.trim();
+    const password = form.password.value;
+
+    try {
+      await fbSignIn(email, password);     // 调我们刚才那个 js 里的登录
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      errBox.textContent = err.message || 'Login failed';
+    }
+  });
+</script>
+</body>
+</html>

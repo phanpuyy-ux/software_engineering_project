@@ -93,7 +93,7 @@
       // Try to send a real confirmation email via API (Resend)
       (async () => {
         try {
-          const confirmLink = `${location.origin}${location.pathname.replace(/\\/[^/]*$/, '/') }confirm.html?token=${encodeURIComponent(verifyToken)}`;
+          const confirmLink = `${location.origin}${location.pathname.replace(/\/[^/]*$/, '/') }confirm.html?token=${encodeURIComponent(verifyToken)}`;
           await fetch('/api/email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -107,7 +107,7 @@
         try {
           const u = (getUsers() || []).find(x => x.email === email);
           if (!u || !u.resetToken) return;
-          const resetLink = `${location.origin}${location.pathname.replace(/\\/[^/]*$/, '/') }reset.html?token=${encodeURIComponent(u.resetToken)}`;
+          const resetLink = `${location.origin}${location.pathname.replace(/\/[^/]*$/, '/') }reset.html?token=${encodeURIComponent(u.resetToken)}`;
           await fetch('/api/email', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ to: email, subject: 'Reset your password', html: `<p>Reset password: <a href=\"${resetLink}\">${resetLink}</a></p>` })
@@ -137,7 +137,7 @@
         // Re-send real email if API is configured
         (async () => {
           try {
-            const confirmLink = `${location.origin}${location.pathname.replace(/\\/[^/]*$/, '/') }confirm.html?token=${encodeURIComponent(newToken)}`;
+            const confirmLink = `${location.origin}${location.pathname.replace(/\/[^/]*$/, '/') }confirm.html?token=${encodeURIComponent(newToken)}`;
             await fetch('/api/email', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ to: email, subject: 'Confirm your account', html: `<p>Click to confirm: <a href=\"${confirmLink}\">${confirmLink}</a></p>` })
