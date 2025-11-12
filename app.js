@@ -280,11 +280,12 @@ async function stopMicRecordingToDataUrl() {
     const elLimit = document.getElementById('limit-label');
     const elLogout = document.getElementById('logout');
     const elNewChat = document.getElementById('new-chat');
-    const elHistory = document.getElementById('history');
-    const elMessages = document.getElementById('messages');
-    const elInput = document.getElementById('composer-input');
-    const elSend = document.getElementById('send');
-    const elMic = document.getElementById('mic');
+    // Support both original IDs and dashboard IDs
+    const elHistory = document.getElementById('history') || document.getElementById('chat-list');
+    const elMessages = document.getElementById('messages') || document.getElementById('chat-messages');
+    const elInput = document.getElementById('composer-input') || document.getElementById('chat-input');
+    const elSend = document.getElementById('send') || document.getElementById('chat-send');
+    const elMic = document.getElementById('mic') || document.getElementById('chat-mic');
 
     if (!elMessages) return; // Not the chat page
 
@@ -299,13 +300,24 @@ async function stopMicRecordingToDataUrl() {
 
     // State
     let currentChatId = null;
+    // If Firebase auth exists, prefer its current user
+    try {
+      if (typeof fbGetCurrentUser === 'function') {
+        const fbUser = fbGetCurrentUser();
+        if (fbUser && fbUser.email) {
+          setCurrentEmail(fbUser.email);
+        }
+      }
+    } catch {}
     const userEmail = getCurrentEmail();
     const userType = getUserType();
 
     // Header info
-    elUser.textContent = userEmail ? `Signed in as ${userEmail}` : 'Guest';
-    elLogout.style.display = userEmail ? 'inline-flex' : 'none';
-    elLogout.addEventListener('click', () => { setCurrentEmail(null); window.location.reload(); });
+    if (elUser) elUser.textContent = userEmail ? `Signed in as ${userEmail}` : 'Guest';
+    if (elLogout) {
+      elLogout.style.display = userEmail ? 'inline-flex' : 'none';
+      elLogout.addEventListener('click', () => { setCurrentEmail(null); window.location.reload(); });
+    }
 
     function usageTextAndClass() {
       const used = getDailyUserMessageCount(userEmail);
@@ -318,8 +330,10 @@ async function stopMicRecordingToDataUrl() {
 
     function refreshUsage() {
       const u = usageTextAndClass();
-      elLimit.className = u.cls;
-      elLimit.textContent = u.text;
+      if (elLimit) {
+        elLimit.className = u.cls;
+        elLimit.textContent = u.text;
+      }
     }
     refreshUsage();
 
@@ -376,11 +390,13 @@ async function stopMicRecordingToDataUrl() {
       renderMessages(id);
     }
 
-    elNewChat.addEventListener('click', () => {
-      currentChatId = null;
-      ensureChat();
-      openChat(currentChatId);
-    });
+    if (elNewChat) {
+      elNewChat.addEventListener('click', () => {
+        currentChatId = null;
+        ensureChat();
+        openChat(currentChatId);
+      });
+    }
 
     // function addMessage(chatId, role, text) {
     //   const map = getMessagesMap();
@@ -519,27 +535,32 @@ function sendMessage(text) {
   assistantRespond(cid, trimmed);
 }
 
-    elSend.addEventListener('click', () => sendMessage(elInput.value));
-    elInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(elInput.value); }
-    });
+    if (elSend) {
+      elSend.addEventListener('click', () => sendMessage(elInput.value));
+    }
+    if (elInput) {
+      elInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(elInput.value); }
+      });
+    }
 
     // Voice input via Web Speech API
         //  纯本地语音识别（不使用 Google API）
     let recognizing = false;
 
     // 检查是否支持录音
-    if (!navigator.mediaDevices?.getUserMedia) {
-      elMic.disabled = true;
-      elMic.title = '浏览器不支持录音功能';
-    } else {
-      elMic.title = ' 点击录音（使用本地 Whisper 识别）';
-      
-      elMic.addEventListener('click', async () => {
-        if (recognizing) {
-          // 停止录音
-          recognizing = false;
-          elMic.textContent = '🎤';
+    if (elMic) {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        elMic.disabled = true;
+        elMic.title = '浏览器不支持录音功能';
+      } else {
+        elMic.title = ' 点击录音（使用本地 Whisper 识别）';
+        
+        elMic.addEventListener('click', async () => {
+          if (recognizing) {
+            // 停止录音
+            recognizing = false;
+            elMic.textContent = '🎤';
           
           console.log(' 停止录音，开始处理...');
           
@@ -591,6 +612,7 @@ function sendMessage(text) {
           }
         }
       });
+      }
     }
 
 
