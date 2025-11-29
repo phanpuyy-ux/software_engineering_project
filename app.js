@@ -701,12 +701,12 @@ function sendMessage(text) {
   document.addEventListener('DOMContentLoaded', () => {
     (async () => {
       await hydrateFromRemote();
-      initRegisterPage();
-      initLoginPage();
+     // initRegisterPage();
+     // initLoginPage();
       initChatPage();
-      initForgotPage();
-      initResetPage();
-      initConfirmPage();
+     // initForgotPage();
+     //  initResetPage();
+     // initConfirmPage();
     })();
   });
 })();
