@@ -421,11 +421,23 @@ async function stopMicRecordingToDataUrl() {
 // ask api place
       async function assistantRespond(cid, userText) {
           try {
-              // 调后端接口
+              // 1. 从本地消息里把当前 chat 的历史取出来
+              const map = getMessagesMap();
+              const msgs = map[cid] || [];
+
+              // 2. 只把 user / assistant 的文本作为 history 传给后端
+              const history = msgs
+                  .filter(m => m.role === 'user' || m.role === 'assistant')
+                  .map(m => ({
+                      role: m.role,
+                      content: m.text
+                  }));
+
+              // 3. 带上 history 调后端
               const res = await fetch('/api/chat', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ userText })
+                  body: JSON.stringify({ userText, history })
               });
 
               if (!res.ok) {
@@ -436,10 +448,8 @@ async function stopMicRecordingToDataUrl() {
               const data = await res.json();
               const reply = data.reply || '(empty reply)';
 
-              // 显示 AI 回复
               addMessage(cid, 'assistant', reply);
 
-              // 维持你原来的 TTS
               if (window.speechSynthesis) {
                   const utter = new SpeechSynthesisUtterance(reply);
                   utter.lang = 'en-US';
@@ -451,6 +461,7 @@ async function stopMicRecordingToDataUrl() {
               addMessage(cid, 'error', 'Backend error: ' + e.message);
           }
       }
+
 
 
 function renderMessages(chatId) {
