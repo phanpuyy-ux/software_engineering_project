@@ -1,5 +1,3 @@
-// api/chat.js  —— Vercel/Node 后端，真正调用 OpenAI
-
 import OpenAI from "openai";
 
 const client = new OpenAI({
@@ -8,7 +6,6 @@ const client = new OpenAI({
     project: process.env.OPENAI_PROJECT_ID,
 });
 
-// Vercel / Next.js API handler
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         res.status(405).json({ error: "Method not allowed" });
@@ -16,29 +13,41 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { userText } = req.body;
+        let { userText } = req.body;
 
-        if (!userText || typeof userText !== "string") {
-            res.status(400).json({ error: "userText is required" });
-            return;
+        // 如果用户输入一个 URL，就从 /api/read 抓取网页内容
+        if (userText.startsWith("http://") || userText.startsWith("https://")) {
+
+            try {
+                const readRes = await fetch(`${req.headers.host.startsWith("localhost") ? "http" : "https"}://${req.headers.host}/api/read`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url: userText })
+                });
+
+                const json = await readRes.json();
+                if (json.content) {
+                    userText = `Please analyze the following webpage content:\n\n${json.content}`;
+                }
+
+            } catch (err) {
+                console.error("URL fetch failed:", err);
+            }
         }
 
         const completion = await client.chat.completions.create({
-            model: "gpt-4.1",          // 你想用哪个模型改这里
+            model: "gpt-4.1",
             messages: [
                 { role: "system", content: "You are a helpful assistant." },
                 { role: "user", content: userText },
             ],
         });
 
-        const reply =
-            completion.choices?.[0]?.message?.content || "(empty reply)";
-
+        const reply = completion.choices?.[0]?.message?.content || "(empty reply)";
         res.status(200).json({ reply });
+
     } catch (err) {
         console.error("OpenAI error:", err);
-        res
-            .status(500)
-            .json({ error: "OpenAI error", detail: err.message || String(err) });
+        res.status(500).json({ error: "OpenAI error", detail: err.message || String(err) });
     }
 }
