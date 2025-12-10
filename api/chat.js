@@ -40,14 +40,23 @@ export default async function handler(req, res) {
             { role: "user", content: userText }
         ];
 
+
         // --- 启用 File Search（使用项目知识库）
+        const VECTOR_STORE_ID = "vs_692231d5414c8191bc1dbb7b121ff065";
+
         const completion = await client.chat.completions.create({
             model: "gpt-4.1",
             messages,
             tools: [
-                { type: "file_search" }
+                {
+                    type: "file_search",
+                    file_search: {
+                        vector_store_ids: [VECTOR_STORE_ID]
+                    }
+                }
             ]
         });
+
 
         const reply = completion.choices?.[0]?.message?.content || "(empty reply)";
         return res.status(200).json({ reply });
