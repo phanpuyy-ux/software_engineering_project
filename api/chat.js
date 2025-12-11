@@ -1,4 +1,4 @@
-// /api/chat.js  ���� Agents + FileSearch + embeddings + Supabase Logging
+// /api/chat.js   Agents + FileSearch + embeddings + Supabase Logging
 
 import { Agent, Runner, fileSearchTool } from "@openai/agents";
 import { z } from "zod";
@@ -12,7 +12,6 @@ const VECTOR_STORE_ID = "vs_692231d5414c8191bc1dbb7b121ff065";
 const fileSearch = fileSearchTool([VECTOR_STORE_ID]);
 
 // -----------------------------------
-// 2) Schema���������� agent.js һ����
 // -----------------------------------
 const Schema = z.object({
     grade: z.string(),
@@ -155,7 +154,7 @@ export default async function handler(req, res) {
         // -------------------------
         try {
             const { error: dbErr } = await supabaseAdmin
-                .from("policy_answers")   // <--- �����ı�����ͬ���������
+                .from("policy_answers")   
                 .insert({
                     question: rawQuestion,
                     answer: finalReply,
