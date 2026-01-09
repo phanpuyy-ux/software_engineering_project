@@ -406,11 +406,23 @@ let englishVoice = null;
 
     function loadVoices() {
       const voices = window.speechSynthesis.getVoices();
-      // 优先选择男声
-      englishVoice = voices.find(v => /^en(-|_|$)/i.test(v.lang) && /male/i.test(v.name)) || 
-                         voices.find(v => /^en(-|_|$)/i.test(v.lang)) || 
+      const englishVoices = voices.filter(v => /^en(-|_|$)/i.test(v.lang));
+          
+          // 按优先级尝试男声
+          const maleVoiceNames = [
+            'Google UK English Male',
+            'Google US English Male', 
+            'Microsoft Mark',
+            'Microsoft David',
+            'Alex',
+            'Tom'
+          ];
+          
+          englishVoice = englishVoices.find(v => maleVoiceNames.some(name => v.name.includes(name))) ||
+                         englishVoices.find(v => !/(female|woman|girl)/i.test(v.name)) ||
+                         englishVoices[0] ||
                          null;
-    }
+        }
 
 
 if (window.speechSynthesis) {
