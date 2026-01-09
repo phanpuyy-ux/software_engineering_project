@@ -406,7 +406,10 @@ let englishVoice = null;
 
     function loadVoices() {
       const voices = window.speechSynthesis.getVoices();
-      englishVoice = voices.find(v => /^en(-|_|$)/i.test(v.lang)) || null;
+      // 优先选择男声
+      englishVoice = voices.find(v => /^en(-|_|$)/i.test(v.lang) && /male/i.test(v.name)) || 
+                         voices.find(v => /^en(-|_|$)/i.test(v.lang)) || 
+                         null;
     }
 
 
