@@ -408,7 +408,7 @@ let englishVoice = null;
       const voices = window.speechSynthesis.getVoices();
       const englishVoices = voices.filter(v => /^en(-|_|$)/i.test(v.lang));
           
-          // 按优先级尝试男声
+
           const maleVoiceNames = [
             'Google UK English Male',
             'Google US English Male', 
