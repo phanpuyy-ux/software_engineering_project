@@ -217,41 +217,23 @@
     renderMessages(chatId);
   }
 
-      async function speakAssistantReply(chatId, replyText) {
-        if (!replyText) return;
-        
-        // 尝试使用讯飞 TTS API
-        if (hasTtsCredentials()) {
-          try {
-            console.log('🎙️ 尝试使用讯飞 TTS API 朗读...');
-            const audioDataUrl = await synthesizeTtsToDataUrl(replyText);
-            if (audioDataUrl) {
-              attachAssistantAudio(chatId, replyText, audioDataUrl);
-              console.log('✅ 讯飞 TTS API 朗读成功');
-              return; // 成功则返回
-            }
-          } catch (err) {
-            console.error('❌ 讯飞 TTS API 失败:', err);
-            // 继续降级到浏览器方案
-          }
-        }
-        
-        // 降级方案：使用浏览器原生 speechSynthesis
-        if (window.speechSynthesis) {
-          try {
-            console.log('🔊 降级使用浏览器 Web Speech API 朗读...');
-            const utter = new SpeechSynthesisUtterance(replyText);
-            utter.lang = 'en-US';
-            if (englishVoice) utter.voice = englishVoice;
-            window.speechSynthesis.speak(utter);
-            console.log('✅ 浏览器朗读已启动');
-          } catch (err) {
-            console.error('❌ 浏览器朗读失败:', err);
-          }
-        } else {
-          console.warn('⚠️ 浏览器不支持 speechSynthesis');
-        }
+  async function speakAssistantReply(chatId, replyText) {
+    if (!replyText) return;
+    if (hasTtsCredentials()) {
+      try {
+        const audioDataUrl = await synthesizeTtsToDataUrl(replyText);
+        if (audioDataUrl) return attachAssistantAudio(chatId, replyText, audioDataUrl);
+      } catch (err) {
+        console.error('TTS API failed:', err);
       }
+    }
+    if (window.speechSynthesis) {
+      const utter = new SpeechSynthesisUtterance(replyText);
+      utter.lang = 'en-US';
+      if (englishVoice) utter.voice = englishVoice;
+      window.speechSynthesis.speak(utter);
+    }
+  }
 
   const withinLastHours = (iso, hours) => (Date.now() - new Date(iso).getTime()) <= hours * 3600 * 1000;
 
@@ -648,8 +630,12 @@ async function stopMicRecordingToDataUrl() {
 
               addMessage(cid, 'assistant', reply);
 
-              // 使用改进的朗读函数（先讯飞 API，失败则降级）
-              await speakAssistantReply(cid, reply);
+              if (window.speechSynthesis) {
+                  const utter = new SpeechSynthesisUtterance(reply);
+                  utter.lang = 'en-US';
+                  if (englishVoice) utter.voice = englishVoice;
+                  window.speechSynthesis.speak(utter);
+              }
           } catch (e) {
               console.error('assistantRespond error:', e);
               addMessage(cid, 'error', 'Backend error: ' + e.message);
