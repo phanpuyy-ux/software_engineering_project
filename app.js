@@ -56,10 +56,10 @@
   const entitlements = { guest: { maxMessagesPerDay: 20 }, regular: { maxMessagesPerDay: 100 } };
 
   const TTS_CONFIG = {
-    appId: '',
-    apiKey: '',
-    apiSecret: '',
-    voice: 'xiaoyan',
+    appId: '164ad4a9',
+    apiKey: '65c4f69e21241401a6e040cca654d145',
+    apiSecret: 'ZTkwNDY3ODc1YTA4YWE5ZGIwMDc5MzEz',
+    voice: 'Ryan',
     speed: 50,
     volume: 50,
     pitch: 50,
@@ -406,8 +406,23 @@ let englishVoice = null;
 
     function loadVoices() {
       const voices = window.speechSynthesis.getVoices();
-      englishVoice = voices.find(v => /^en(-|_|$)/i.test(v.lang)) || null;
-    }
+      const englishVoices = voices.filter(v => /^en(-|_|$)/i.test(v.lang));
+          
+
+          const maleVoiceNames = [
+            'Google UK English Male',
+            'Google US English Male', 
+            'Microsoft Mark',
+            'Microsoft David',
+            'Alex',
+            'Tom'
+          ];
+          
+          englishVoice = englishVoices.find(v => maleVoiceNames.some(name => v.name.includes(name))) ||
+                         englishVoices.find(v => !/(female|woman|girl)/i.test(v.name)) ||
+                         englishVoices[0] ||
+                         null;
+        }
 
 
 if (window.speechSynthesis) {
