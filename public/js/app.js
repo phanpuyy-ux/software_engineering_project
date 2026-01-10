@@ -1,4 +1,4 @@
-// front_test/app.js
+// app.js
 // Self-contained demo logic: auth, chat, history, limits, voice (no backend).
 
 (function () {
