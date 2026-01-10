@@ -61,6 +61,15 @@
       display: flex;
       flex-direction: column;
     }
+    .dashboard-panel {
+      position: relative;
+      transition: transform .08s ease-out, box-shadow .08s ease-out, filter .08s ease-out;
+    }
+    .dashboard-panel.is-hold {
+      transform: translateY(1px);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+      filter: brightness(0.98);
+    }
     .verify-ok { color: #22c55e; font-size: 12px; }
     .verify-no { color: #f97316; font-size: 12px; }
   </style>
@@ -94,7 +103,7 @@
     </header>
 
     <!-- 中间聊天区域 -->
-    <div style="flex:1; display:flex; flex-direction:column; background:#dcdfe4;">
+    <div id="dashboard-panel" class="dashboard-panel" style="flex:1; display:flex; flex-direction:column; background:#dcdfe4;">
       <!-- 上面消息区 -->
       <div id="chat-messages" style="
           flex:1;
@@ -132,6 +141,20 @@
 <!-- 你已经有的 firebase-auth.js，一定要在我们自己的脚本前面引 -->
 <script src="firebase-auth.js"></script>
 <script>
+  function initHoldEffect() {
+    const panel = document.getElementById('dashboard-panel');
+    if (!panel) return;
+
+    const setHold = (on) => {
+      panel.classList.toggle('is-hold', on);
+    };
+
+    panel.addEventListener('pointerdown', () => setHold(true));
+    panel.addEventListener('pointerup', () => setHold(false));
+    panel.addEventListener('pointerleave', () => setHold(false));
+    panel.addEventListener('pointercancel', () => setHold(false));
+  }
+
   /* ---------- 聊天气泡渲染 ---------- */
   function addChatBubble(role, text) {
     const box = document.getElementById('chat-messages');
@@ -279,6 +302,7 @@
     // seedFakeChat(user.email);
     // initVoiceInput();
     // initSend();
+    initHoldEffect();
   })();
 </script>
 <script src="app.js"></script>
