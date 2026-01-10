@@ -180,15 +180,15 @@ export default async function handler(req, res) {
         // -----------------------------------
         let safeReply = finalReply;
 
-        if (sim_answer_sources < 0.65 ||sim_l2 < 0.20 || sim_angular < 0.65) {
-            safeReply = 
-           "The model is not confident about the answer to the question. " +
-            "Please explain it in a more detailed way or provide more context. " +
-            "You can also contact Mr. Holloway at m.holloway@imperial.ac.uk or Dr. Janan at f.janan@imperial.ac.uk.";
-        } else if (sim_answer_sources === 0 && sim_angular === 0) {
+        if (sim_answer_sources === 0 && sim_angular === 0) {
             // Skip similarity check if both scores are 0
             // This handles cases where embeddings failed
             safeReply = finalReply;
+        }else if (sim_answer_sources < 0.65 ||sim_l2 < 0.20 || sim_angular < 0.65) {
+            safeReply =
+           "The model is not confident about the answer to the question. " +
+            "Please explain it in a more detailed way or provide more context. " +
+            "You can also contact Mr. Holloway at m.holloway@imperial.ac.uk or Dr. Janan at f.janan@imperial.ac.uk.";
         }
 
         // -------------------------
