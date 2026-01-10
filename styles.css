@@ -58,6 +58,7 @@ body {
 .bubble.user { background: #1f2937; align-self: flex-end; }
 .bubble.assistant { background: #0f172a; align-self: flex-start; }
 .bubble.error { background: #2a0f13; border: 1px solid var(--danger); }
+.bubble.thinking { opacity: 0.7; font-style: italic; }
 
 .composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #222; background: var(--panel); }
 .composer .input { flex: 1; }
@@ -104,4 +105,3 @@ body {
 .audio-seek::-moz-range-thumb{
   width:14px; height:14px; border-radius:50%; background:#111827; border:none; cursor:pointer;
 }}
-

@@ -607,33 +607,50 @@ async function stopMicRecordingToDataUrl() {
    function addMessage(chatId, role, text, extra = {}) {
   const map = getMessagesMap();
   const arr = map[chatId] || [];
-  arr.push({ id: uuid(), role, text, createdAt: nowIso(), ...extra }); // 支持 audioDataUrl
+  const messageId = extra.id || uuid();
+  arr.push({ id: messageId, role, text, createdAt: nowIso(), ...extra }); // 支持 audioDataUrl
   map[chatId] = arr;
   setMessagesMap(map);
   renderMessages(chatId);
   refreshUsage();
+  return messageId;
+}
+
+function updateMessage(chatId, messageId, updates = {}) {
+  const map = getMessagesMap();
+  const arr = map[chatId] || [];
+  const idx = arr.findIndex(m => m.id === messageId);
+  if (idx === -1) return false;
+  arr[idx] = { ...arr[idx], ...updates };
+  map[chatId] = arr;
+  setMessagesMap(map);
+  renderMessages(chatId);
+  return true;
 }
 
 // ask api place
-      async function assistantRespond(cid, userText) {
-          try {
-              // 1. 从本地消息里把当前 chat 的历史取出来
-              const map = getMessagesMap();
-              const msgs = map[cid] || [];
+       async function assistantRespond(cid, userText) {
+           let pendingId = null;
+           try {
+               // 1. 从本地消息里把当前 chat 的历史取出来
+               const map = getMessagesMap();
+               const msgs = map[cid] || [];
 
-              // 2. 只把 user / assistant 的文本作为 history 传给后端
-              const history = msgs
-                  .filter(m => m.role === 'user' || m.role === 'assistant')
-                  .map(m => ({
-                      role: m.role,
-                      content: m.text
-                  }));
+               // 2. 只把 user / assistant 的文本作为 history 传给后端
+               const history = msgs
+                   .filter(m => (m.role === 'user' || m.role === 'assistant') && !m.pending)
+                   .map(m => ({
+                       role: m.role,
+                       content: m.text
+                   }));
 
-              // 3. 带上 history 调后端
-              const res = await fetch('/api/chat', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ userText, history, userEmail })
+               pendingId = addMessage(cid, 'assistant', 'Thinking...', { pending: true });
+
+               // 3. 带上 history 调后端
+               const res = await fetch('/api/chat', {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({ userText, history, userEmail })
               });
 
               if (!res.ok) {
@@ -641,22 +658,27 @@ async function stopMicRecordingToDataUrl() {
                   throw new Error(err.error || 'Backend error');
               }
 
-              const data = await res.json();
-              const reply = data.reply || '(empty reply)';
+               const data = await res.json();
+               const reply = data.reply || '(empty reply)';
 
-              addMessage(cid, 'assistant', reply);
+               if (!updateMessage(cid, pendingId, { text: reply, role: 'assistant', pending: false })) {
+                 addMessage(cid, 'assistant', reply);
+               }
 
-              if (window.speechSynthesis) {
-                  const utter = new SpeechSynthesisUtterance(reply);
-                  utter.lang = 'en-US';
-                  if (englishVoice) utter.voice = englishVoice;
-                  window.speechSynthesis.speak(utter);
-              }
-          } catch (e) {
-              console.error('assistantRespond error:', e);
-              addMessage(cid, 'error', 'Backend error: ' + e.message);
-          }
-      }
+               if (window.speechSynthesis) {
+                   const utter = new SpeechSynthesisUtterance(reply);
+                   utter.lang = 'en-US';
+                   if (englishVoice) utter.voice = englishVoice;
+                   window.speechSynthesis.speak(utter);
+               }
+           } catch (e) {
+               console.error('assistantRespond error:', e);
+               const errorText = 'Backend error: ' + e.message;
+               if (!pendingId || !updateMessage(cid, pendingId, { text: errorText, role: 'error', pending: false })) {
+                 addMessage(cid, 'error', errorText);
+               }
+           }
+       }
 
 
 
@@ -668,6 +690,9 @@ function renderMessages(chatId) {
     const div = document.createElement('div');
     // voice 消息沿用用户 or 助手样式，这里仍按 role 渲染
     div.className = 'bubble ' + (m.role === 'user' ? 'user' : (m.role === 'error' ? 'error' : 'assistant'));
+    if (m.pending) {
+      div.classList.add('thinking');
+    }
 
     if (m.audioDataUrl) {
 
@@ -702,7 +727,8 @@ function renderMessages(chatId) {
       div.appendChild(caption);
     } else {
 
-      div.textContent = m.text;
+      const displayText = m.pending ? 'Thinking...' : m.text;
+      div.textContent = displayText || '';
     }
 
     elMessages.appendChild(div);
