@@ -3,7 +3,7 @@
 import { Agent, Runner, fileSearchTool } from "@openai/agents";
 import { z } from "zod";
 import OpenAI from "openai";
-import { supabaseAdmin } from "../supabaseServer.js";
+import { supabaseAdmin } from "./lib/supabaseServer.js";
 
 // -----------------------------------
 // 1) File Search Vector Store
