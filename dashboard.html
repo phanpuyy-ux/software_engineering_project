@@ -115,6 +115,29 @@
       box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
       filter: brightness(0.98);
     }
+    .bubble {
+      max-width: 70%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      white-space: pre-wrap;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+    }
+    .bubble.user {
+      align-self: flex-end;
+      background: #2563eb;
+      color: #fff;
+    }
+    .bubble.assistant {
+      align-self: flex-start;
+      background: #fff;
+      color: #0f172a;
+    }
+    .bubble.error {
+      align-self: flex-start;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
     .verify-ok { color: #22c55e; font-size: 12px; }
     .verify-no { color: #f97316; font-size: 12px; }
   </style>
