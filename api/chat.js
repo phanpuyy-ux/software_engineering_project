@@ -1,4 +1,4 @@
-// /api/chat.js  ���� Agents + FileSearch + embeddings + Supabase Logging
+// /api/chat.js - Agents + FileSearch + embeddings + Supabase Logging
 
 import { Agent, Runner, fileSearchTool } from "@openai/agents";
 import { z } from "zod";
@@ -12,7 +12,7 @@ const VECTOR_STORE_ID = "vs_692231d5414c8191bc1dbb7b121ff065";
 const fileSearch = fileSearchTool([VECTOR_STORE_ID]);
 
 // -----------------------------------
-// 2) Schema���������� agent.js һ����
+// 2) Schema Definition
 // -----------------------------------
 const Schema = z.object({
     grade: z.string(),
@@ -185,9 +185,10 @@ export default async function handler(req, res) {
            "The model is not confident about the answer to the question. " +
             "Please explain it in a more detailed way or provide more context. " +
             "You can also contact Mr. Holloway at m.holloway@imperial.ac.uk or Dr. Janan at f.janan@imperial.ac.uk.";
-        }else if (sim_answer_sources ==0 && sim_angular ==0){
-            continue;
-            
+        } else if (sim_answer_sources === 0 && sim_angular === 0) {
+            // Skip similarity check if both scores are 0
+            // This handles cases where embeddings failed
+            safeReply = finalReply;
         }
 
         // -------------------------
