@@ -3,7 +3,7 @@ import { ChatEngine } from "./ChatEngine.js";
 import { Agent, Runner, fileSearchTool } from "@openai/agents";
 import OpenAI from "openai";
 import { z } from "zod";
-import { supabaseAdmin } from "../lib/supabaseServer.js";
+import { supabaseAdmin } from "../../api/lib/supabaseServer.js";
 
 const VECTOR_STORE_ID = "vs_692231d5414c8191bc1dbb7b121ff065";
 const fileSearch = fileSearchTool([VECTOR_STORE_ID]);
