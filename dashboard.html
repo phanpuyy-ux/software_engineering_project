@@ -30,6 +30,51 @@
       background: #ffffff;
       color: #000;
     }
+    #new-chat {
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #e5e7eb;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      font-weight: 600;
+    }
+    #new-chat:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    #chat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .history-item,
+    .history-empty {
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #e5e7eb;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .history-item {
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background .12s ease, transform .08s ease, border-color .12s ease;
+    }
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .history-item.active {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.28);
+      transform: translateY(1px);
+    }
+    .history-empty {
+      color: rgba(229, 231, 235, 0.8);
+      white-space: normal;
+    }
     .btn {
       background: #e2e8f0;
       border: none;
