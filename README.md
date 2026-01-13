@@ -19,12 +19,34 @@ Voice-enabled web assistant for Bioengineering Department policy questions. The 
 - `api/` - Vercel serverless functions
 - `server/` - API handlers and chat engines
 
-## Local Development
-1. `npm install`
-2. `npx vercel dev`
-3. Open `http://localhost:3000/login`
+## Quick Start (Local)
+1. `git clone <repo-url>`
+2. `cd software_engineering_project`
+3. `npm install`
+4. `npx vercel dev`
+5. Open `http://localhost:3000/login`
 
 If you only need the UI, open `public/login.html` directly in a browser, but serverless APIs will not be available.
+
+## Update From Remote
+- `git pull`
+- `npm install` (if dependencies changed)
+
+## Deployment (Vercel)
+1. `npm install`
+2. `npx vercel login`
+3. `npx vercel link` (or create a new project)
+4. Set required environment variables (see Configuration).
+5. `npx vercel deploy --prod`
+
+The `vercel.json` file enables clean URLs like `/login` and `/register`.
+
+## Usage
+1. Visit `/register` to create an account.
+2. Follow the email verification prompt (demo link shown in UI).
+3. Sign in at `/login`.
+4. Start a chat on `dashboard.html` and use the mic for voice input if supported.
+5. Daily limits apply (guest 20/day, signed-in 100/day).
 
 ## Configuration
 Server-side environment variables (Vercel):
@@ -35,6 +57,8 @@ Server-side environment variables (Vercel):
 - `FIREBASE_SERVICE_ACCOUNT` (Firestore storage for /api/storage)
 - `RESEND_API_KEY` and `EMAIL_FROM` (email sending for /api/email)
 - `USE_MOCK_CHAT=true` to use the mock chat engine
+
+For `vercel dev`, set env vars in `.env.local` or use `npx vercel env pull`.
 
 Client-side:
 - Firebase API key in `public/js/firebase-auth.js`
