@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
-      --bg: #0f172a;        /* 整体背景 */
-      --panel: #111827;     /* 卡片背景 */
+      --bg: #0f172a;        /* Page background */
+      --panel: #111827;     /* Card background */
       --border: #1f2937;
       --text: #e5e7eb;
       --muted: #94a3b8;
@@ -132,7 +132,7 @@
   </div>
 </div>
 
-<!-- 你的 firebase-auth.js -->
+<!-- Your firebase-auth.js -->
 <script src="/js/firebase-auth.js"></script>
 <script>
   const form = document.getElementById('login-form');
@@ -146,7 +146,7 @@
 
     try {
       await fbSignIn(email, password);
-      // 登录成功去 dashboard 或 chat，看你入口怎么写的
+      // After login, go to dashboard or chat depending on entry
       window.location.href = 'dashboard.html';
     } catch (err) {
       errBox.textContent = err.message || 'Login failed';

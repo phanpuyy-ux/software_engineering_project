@@ -60,8 +60,8 @@ export class OpenAIChatEngine extends ChatEngine {
             (out.conclusion ? out.conclusion + "\n\n" : "") +
             (out.analysis || "");
 
-        //  你原来的 embedding / similarity / supabase insert
-        // 可以原样搬进来（我下一步可以帮你精简）
+        // Your original embedding / similarity / supabase insert
+        // Can be dropped in as-is (I can help trim it later)
 
         return {
             reply: replyText || "(empty reply)",

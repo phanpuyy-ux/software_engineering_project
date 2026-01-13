@@ -1,7 +1,7 @@
 // firebase-auth.js
-const API_KEY = "AIzaSyCFgslM9FY0UmUWq9Jzqhq46XnFvmIpzP0"; // 就用你Java里的
+const API_KEY = "AIzaSyCFgslM9FY0UmUWq9Jzqhq46XnFvmIpzP0"; // Use the same one as your Java app
 
-// 通用的 post
+// Shared POST helper
 async function firebasePost(endpoint, bodyObj) {
     const resp = await fetch(`https://identitytoolkit.googleapis.com/v1/${endpoint}?key=${API_KEY}`, {
         method: "POST",
@@ -15,15 +15,15 @@ async function firebasePost(endpoint, bodyObj) {
     return data;
 }
 
-// 登录
+// Sign in
 async function fbSignIn(email, password) {
     const data = await firebasePost("accounts:signInWithPassword", {
         email,
         password,
         returnSecureToken: true,
     });
-    // data 里有 idToken / email / refreshToken / localId
-    // 为了跟 Dashboard 通讯，我们存一下
+    // data includes idToken / email / refreshToken / localId
+    // Store it for dashboard usage
     const user = {
         email: data.email,
         idToken: data.idToken,
@@ -32,7 +32,7 @@ async function fbSignIn(email, password) {
     return user;
 }
 
-// 注册
+// Sign up
 async function fbSignUp(email, password) {
     const data = await firebasePost("accounts:signUp", {
         email,
@@ -47,7 +47,7 @@ async function fbSignUp(email, password) {
     return user;
 }
 
-// 发重置密码邮件
+// Send reset password email
 async function fbSendReset(email) {
     await firebasePost("accounts:sendOobCode", {
         requestType: "PASSWORD_RESET",
@@ -55,7 +55,7 @@ async function fbSendReset(email) {
     });
 }
 
-// 发验证邮箱
+// Send verification email
 async function fbSendVerify(idToken) {
     await firebasePost("accounts:sendOobCode", {
         requestType: "VERIFY_EMAIL",
@@ -63,7 +63,7 @@ async function fbSendVerify(idToken) {
     });
 }
 
-// 查最新用户信息（看邮箱到底 verify 没）
+// Fetch latest user info (check if email is verified)
 async function fbLookup(idToken) {
     const data = await firebasePost("accounts:lookup", {
         idToken,
@@ -75,7 +75,7 @@ async function fbLookup(idToken) {
     };
 }
 
-// 读当前登录用户
+// Read current signed-in user
 function fbGetCurrentUser() {
     const raw = localStorage.getItem("currentUser");
     if (!raw) return null;
@@ -86,7 +86,7 @@ function fbGetCurrentUser() {
     }
 }
 
-// 退出
+// Sign out
 function fbSignOut() {
     localStorage.removeItem("currentUser");
 }

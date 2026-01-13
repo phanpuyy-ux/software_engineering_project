@@ -111,7 +111,7 @@
   </div>
 </div>
 
-<!-- 引你已经有的 firebase-auth.js -->
+<!-- Include your existing firebase-auth.js -->
 <script src="/js/firebase-auth.js"></script>
 <script>
   const form = document.getElementById('login-form');
@@ -124,7 +124,7 @@
     const password = form.password.value;
 
     try {
-      await fbSignIn(email, password);     // 调我们刚才那个 js 里的登录
+      await fbSignIn(email, password);     // Call the login helper from the JS above
       window.location.href = 'dashboard.html';
     } catch (err) {
       errBox.textContent = err.message || 'Login failed';

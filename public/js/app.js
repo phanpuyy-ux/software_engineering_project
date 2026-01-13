@@ -336,21 +336,21 @@
 
 let englishVoice = null;
 
-    //  本地 ASR 模块
+    // Local ASR module
     let asrPipeline = null;
     let asrReady = false;
     
-    // 初始化本地 Whisper 模型
+    // Initialize local Whisper model
     async function initLocalASR() {
       if (asrPipeline || asrReady) return;
       
       console.log(' 开始加载本地 Whisper 模型（从 CDN）...');
       
       try {
-        // ✅ 使用 CDN 版本，不需要构建工具
+        // Use the CDN build; no bundler required
         const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js');
         
-        // 加载 Whisper Tiny 模型（约 75MB，首次需要下载）
+        // Load Whisper Tiny model (~75MB, first run downloads)
         asrPipeline = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny');
         asrReady = true;
         
@@ -363,7 +363,7 @@ let englishVoice = null;
       }
     }
     
-    // 使用本地 ASR 转录音频
+    // Transcribe audio with local ASR
     async function transcribeWithLocalASR(audioBlob) {
       if (!asrReady || !asrPipeline) {
         console.warn('⚠️ 本地 ASR 未就绪');
@@ -373,24 +373,24 @@ let englishVoice = null;
       try {
         console.log(' 开始本地转录，音频大小:', (audioBlob.size / 1024).toFixed(2), 'KB');
         
-        // 1. 转换为 ArrayBuffer
+        // 1. Convert to ArrayBuffer
         const arrayBuffer = await audioBlob.arrayBuffer();
         
-        // 2. 使用 Web Audio API 解码音频
+        // 2. Decode audio with Web Audio API
         const audioContext = new (window.AudioContext || window.webkitAudioContext)({
-          sampleRate: 16000 // Whisper 推荐采样率
+          sampleRate: 16000 // Whisper recommended sample rate
         });
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         
-        // 3. 提取单声道音频数据
+        // 3. Extract mono audio data
         const audioData = audioBuffer.getChannelData(0);
         
         console.log(' 音频数据准备完成，长度:', audioData.length, '样本');
         console.log(' 开始 Whisper 识别...');
         
-        // 4. 调用 Whisper 模型转录
+        // 4. Call Whisper model to transcribe
         const result = await asrPipeline(audioData, {
-          // ✅ 不指定 language，让 Whisper 自动检测
+          // Do not set language; let Whisper auto-detect
           task: 'transcribe',
           return_timestamps: false
         });
@@ -466,7 +466,7 @@ async function stopMicRecordingToDataUrl() {
     mediaRecorder.stop();
   });
   stopMicTracks();
-  const blob = new Blob(mediaChunks, { type: 'audio/webm' }); // 兼容 Chrome
+  const blob = new Blob(mediaChunks, { type: 'audio/webm' }); // Chrome compatibility
   return await blobToDataUrl(blob); // data:audio/webm;base64,...
 }
 
@@ -485,7 +485,7 @@ async function stopMicRecordingToDataUrl() {
 
     if (!elMessages) return; // Not the chat page
 
-    //  初始化本地 ASR（后台异步加载）
+    // Initialize local ASR (async in background)
     console.log(' 页面加载，开始初始化本地 ASR...');
     initLocalASR().then(success => {
       if (success && elMic) {
@@ -608,7 +608,7 @@ async function stopMicRecordingToDataUrl() {
   const map = getMessagesMap();
   const arr = map[chatId] || [];
   const messageId = extra.id || uuid();
-  arr.push({ id: messageId, role, text, createdAt: nowIso(), ...extra }); // 支持 audioDataUrl
+  arr.push({ id: messageId, role, text, createdAt: nowIso(), ...extra }); // Supports audioDataUrl
   map[chatId] = arr;
   setMessagesMap(map);
   renderMessages(chatId);
@@ -632,11 +632,11 @@ function updateMessage(chatId, messageId, updates = {}) {
        async function assistantRespond(cid, userText) {
            let pendingId = null;
            try {
-               // 1. 从本地消息里把当前 chat 的历史取出来
+               // 1. Pull current chat history from local messages
                const map = getMessagesMap();
                const msgs = map[cid] || [];
 
-               // 2. 只把 user / assistant 的文本作为 history 传给后端
+               // 2. Send only user/assistant text as history to backend
                const history = msgs
                    .filter(m => (m.role === 'user' || m.role === 'assistant') && !m.pending)
                    .map(m => ({
@@ -646,7 +646,7 @@ function updateMessage(chatId, messageId, updates = {}) {
 
                pendingId = addMessage(cid, 'assistant', 'Thinking...', { pending: true });
 
-               // 3. 带上 history 调后端
+               // 3. Call backend with history
                const res = await fetch('/api/chat', {
                    method: 'POST',
                    headers: { 'Content-Type': 'application/json' },
@@ -688,7 +688,7 @@ function renderMessages(chatId) {
   elMessages.innerHTML = '';
   for (const m of msgs) {
     const div = document.createElement('div');
-    // voice 消息沿用用户 or 助手样式，这里仍按 role 渲染
+    // Voice messages reuse user/assistant styles; still render by role
     div.className = 'bubble ' + (m.role === 'user' ? 'user' : (m.role === 'error' ? 'error' : 'assistant'));
     if (m.pending) {
       div.classList.add('thinking');
@@ -711,7 +711,7 @@ function renderMessages(chatId) {
       caption.style.background = 'rgba(0,0,0,0.05)';
       caption.style.borderRadius = '4px';
       
-      //  显示识别方式标记
+      // Show recognition method badge
       let methodBadge = '';
       if (m.asrMethod === 'whisper-local') {
         methodBadge = '<span style="color: #28a745; font-weight: bold;"> ASR result</span>';
@@ -795,10 +795,10 @@ function sendMessage(text) {
     }
 
     // Voice input via Web Speech API
-        //  纯本地语音识别（不使用 Google API）
+        // Local-only speech recognition (no Google API)
     let recognizing = false;
 
-    // 检查是否支持录音
+    // Check recording support
     if (elMic) {
       if (!navigator.mediaDevices?.getUserMedia) {
         elMic.disabled = true;
@@ -808,13 +808,13 @@ function sendMessage(text) {
         
         elMic.addEventListener('click', async () => {
           if (recognizing) {
-            // 停止录音
+            // Stop recording
             recognizing = false;
             elMic.textContent = '🎤';
           
           console.log(' 停止录音，开始处理...');
           
-          // 获取录音数据
+          // Get recorded audio data
           const audioDataUrl = await stopMicRecordingToDataUrl();
           
           if (mediaChunks.length === 0) {
@@ -825,7 +825,7 @@ function sendMessage(text) {
           const audioBlob = new Blob(mediaChunks, { type: 'audio/webm' });
           console.log(' 录音大小:', (audioBlob.size / 1024).toFixed(2), 'KB');
           
-          //  使用本地 Whisper 识别
+          // Run local Whisper recognition
           console.log(' 开始本地 Whisper 识别...');
           const transcriptText = await transcribeWithLocalASR(audioBlob);
           
@@ -837,18 +837,18 @@ function sendMessage(text) {
           
           console.log('✅ 识别成功:', transcriptText);
           
-          // 保存消息
+          // Save message
           const cid = currentChatId || ensureChat();
           addMessage(cid, 'user', transcriptText, { 
             audioDataUrl,
             asrMethod: 'whisper-local'
           });
           
-          // 触发助手回复
+          // Trigger assistant reply
           assistantRespond(cid, transcriptText);
           
         } else {
-          // 开始录音
+          // Start recording
           try {
             recognizing = true;
             elMic.textContent = '⏺';

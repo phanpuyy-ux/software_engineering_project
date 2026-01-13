@@ -39,7 +39,7 @@
         const password = form.password.value;
         try {
           await fbSignUp(email, password);
-          // 注册完你JavaFX是直接进 dashboard 的，我们也这么做
+          // JavaFX goes straight to dashboard after signup, so do the same here
           window.location.href = 'dashboard.html';
         } catch (err) {
           alert(err.message);
