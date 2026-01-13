@@ -1,4 +1,4 @@
-# BIOE70071 Policy Assistant Prototype
+# BIOE70071 Policy Assistant 
 
 A multi-part prototype for a bioengineering policy assistant: a static web UI,
 Vercel serverless APIs for chat/email/storage, a FastAPI vector search service,
